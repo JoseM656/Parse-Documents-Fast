@@ -7,6 +7,10 @@
 # Excluir configuraciones locales de desarrollo
 .devcontainer/
 
+# Archivos generados durante pruebas manuales.
+# El procesamiento es en memoria (issue #14), esta carpeta no tiene rol en el código.
+uploads/
+
 # Infraestructura / Traefik
 .infra/certs/*.pem
 .infra/certs/*.key
