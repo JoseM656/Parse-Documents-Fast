@@ -4,7 +4,7 @@ services:
     container_name: traefik
     environment:
     # Modficar en caso de que su Docker Engine no soporte -> docker version --format '{{.Server.APIVersion}}'
-      - DOCKER_API_VERSION=1.55
+      - DOCKER_API_VERSION=1.40
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
