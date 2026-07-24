@@ -2,7 +2,7 @@ http:
   routers:
     # Router para el Dashboard de Traefik
     traefik-dashboard:
-      rule: "Host(`api.pdfmanager.local`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+      rule: "Host(`dashboard.pdfmanager.local`)"
       service: "api@internal"  # Servicio nativo de Traefik
       entryPoints:
         - https
