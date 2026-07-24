@@ -272,3 +272,7 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# .gitignore
+traefik/certs/
+!traefik/certs/.gitkeep
