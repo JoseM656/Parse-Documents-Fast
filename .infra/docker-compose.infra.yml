@@ -1,10 +1,7 @@
 services:
   reverse-proxy:
-    image: traefik:v3.5
+    image: traefik:v3.6.1 # Version con fix.
     container_name: traefik
-    environment:
-    # Modficar en caso de que su Docker Engine no soporte -> docker version --format '{{.Server.APIVersion}}'
-      - DOCKER_API_VERSION=1.40
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
