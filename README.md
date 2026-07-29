@@ -38,6 +38,49 @@ cp .env.example .env
 
 > 💡 **Nota:** Abra el archivo `.env` recién creado y configure las variables correspondientes. Preste especial atención a `MONGO_URI` y `API_BASE_URL` según el entorno que vaya a iniciar.
 
+---
+
+## Traefik (Reverse Proxy)
+
+Todo el tráfico hacia la API pasa por **Traefik**, que hace de proxy HTTPS único: la API no expone ningún puerto directamente al host, solo es alcanzable a través del proxy. Por eso, **Traefik tiene que estar levantado antes que la app** — es quien crea la red externa (`fast_pdf_network`) que los `docker-compose` de la app esperan encontrar ya creada.
+
+### 1. Generar certificados locales
+
+```bash
+cd .infra/certs
+mkcert "pdfmanager.local" "*.pdfmanager.local"
+mv pdfmanager.local+1.pem pdfmanager.pem
+mv pdfmanager.local+1-key.pem pdfmanager-key.pem
+```
+
+> Cada máquina genera los suyos (no se versionan). Si es la primera vez usando `mkcert`, corré `mkcert -install` para que el navegador confíe en el certificado.
+ 
+### 2. Agregar el dominio local al archivo de hosts
+
+`/etc/hosts` (Linux/macOS) o `C:\Windows\System32\drivers\etc\hosts` (Windows):
+
+```
+127.0.0.1   api.pdfmanager.local   pdfmanager.local
+```
+
+### 3. Levantar Traefik
+
+```bash
+docker compose -f .infra/docker-compose.infra.yml up -d
+```
+
+Para bajarlo: `docker compose -f .infra/docker-compose.infra.yml down`
+
+### URL final de acceso
+
+Es la misma en Modo Desarrollo y en Modo Producción, porque quien enruta siempre es Traefik:
+
+- API: `https://api.pdfmanager.local/api/pdfs`
+- Dashboard de Traefik: `https://api.pdfmanager.local/dashboard/`
+Si no instalaste la CA local con `mkcert -install`, podés probar igual con `curl -k` (ignora la validación del certificado).
+
+---
+
 ## Modos de Ejecución del Proyecto
 
 El despliegue de la aplicación está diseñado bajo un principio de desacoplamiento de infraestructura. Cuenta con dos flujos independientes según el caso de uso:
@@ -106,12 +149,20 @@ Si durante la etapa de pruebas requiere eliminar por completo la base de datos l
 docker compose -f docker-compose.yml -f docker-compose.dev.yml down -v
 ```
 
+#### 5. Detener Traefik
+
+```bash
+docker compose -f .infra/docker-compose.infra.yml down
+```
+
 ---
 
 ## Uso de de la herramienta
 
 Una vez levantado docker y sincronizado uv se puede usar directamente con: `fast-pdf <comando>` en caso
 de que falle, se puede usar `uv run fast-pdf <comando>` para minimizar errores. Se puede usar `fast-pdf -h` para ayuda.
+
+> ⚠️ **Importante:** como la API ya no publica el puerto 8000 al host, el valor por defecto `API_BASE_URL=http://localhost:8000` no funciona ejecutando el CLI desde la terminal del host. Dos opciones: correr el CLI dentro del contenedor (`docker compose exec app fast-pdf list`), o apuntar `API_BASE_URL` a `https://api.pdfmanager.local` en el `.env`.
 
 ### Comandos
 
@@ -243,7 +294,8 @@ El proyecto utiliza diversas tecnologías para el procesamiento y análisis de d
   Herramienta utilizada dentro del flujo de desarrollo.
 - **MongoDB**
   Base de datos NoSQL utilizada para almacenar la información extraída.
-
+- **Traefik**
+  Reverse proxy que centraliza el acceso HTTPS a la API.
 ---
 
 ## Metodologías y Principios Aplicados
