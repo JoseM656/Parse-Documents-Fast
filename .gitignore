@@ -4,6 +4,9 @@
 .agents/
 .skills-lock.json
 
+# scripts locales
+run.sh
+
 # Excluir configuraciones locales de desarrollo
 .devcontainer/
 
