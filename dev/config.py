@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     MAX_FILE_SIZE_MB: int = 10
     API_BASE_URL: str = "http://localhost:8000"
 
+    # Ruta opcional al CA bundle (ej. rootCA.pem de mkcert) para que el CLI
+    # confíe en certificados locales. Si se deja vacía, el CLI lo auto-detecta.
+    SSL_CERT_FILE: str | None = None
+
     # Esta linea es clave para sobreescribir la configuracion del entorno.
     model_config = SettingsConfigDict(env_file=".env", extra="allow")
 

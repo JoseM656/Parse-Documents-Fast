@@ -113,6 +113,31 @@ class TestUploadCommand:
             # Verifica que el archivo se mandó en el campo "file"
             assert "files" in call_kwargs.kwargs or len(call_kwargs.args) > 0
 
+    def test_upload_passes_verify_to_httpx(self, tmp_path: Path) -> None:
+        """upload debe pasar un argumento `verify` para confiar en el CA local."""
+        pdf_file = tmp_path / "documento.pdf"
+        pdf_file.write_bytes(b"%PDF-1.4 content")
+
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "id": "abc123",
+            "title": "documento",
+            "size": 16,
+            "created_at": "2026-01-01T00:00:00",
+        }
+
+        with patch("httpx.post", return_value=mock_response) as mock_post:
+            from dev.client.cli import _cmd_upload
+            import argparse
+
+            args = argparse.Namespace(pdf_file=pdf_file, info=False)
+            result = _cmd_upload(args)
+
+            assert result == 0
+            verify = mock_post.call_args.kwargs.get("verify")
+            assert verify is True or isinstance(verify, str)
+
     def test_upload_with_info_flag_shows_size_and_date(self, tmp_path: Path, capsys) -> None:
         """--info debe mostrar tamaño y fecha además del ID."""
         pdf_file = tmp_path / "documento.pdf"

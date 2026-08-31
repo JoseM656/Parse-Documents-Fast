@@ -19,11 +19,16 @@ from pathlib import Path
 
 import httpx
 
+from dev.client.ssl_trust import resolve_ssl_verify
 from dev.config import settings
 
 # Endpoint base de la API. Se construye una sola vez y se reutiliza en todos
 # los comandos para evitar repetir la URL en cada función.
 _API_PDFS = f"{settings.API_BASE_URL}/api/pdfs"
+
+# Verificación TLS: resuelve el CA local de mkcert (o el explícito de
+# SSL_CERT_FILE) una sola vez, para no exportar nada a mano en cada entorno.
+_VERIFY = resolve_ssl_verify(settings.SSL_CERT_FILE)
 
 
 # ---------------------------------------------------------------------------
@@ -54,6 +59,7 @@ def _cmd_upload(args: argparse.Namespace) -> int:
                 _API_PDFS,
                 files={"file": (pdf_path.name, f, "application/pdf")},
                 data={"title": pdf_path.stem},
+                verify=_VERIFY,
             )
 
         # 409 Conflict: el servidor detectó un duplicado por checksum
@@ -105,7 +111,7 @@ def _cmd_list(_args: argparse.Namespace) -> int:
         Código de salida (0 = éxito, 1 = error).
     """
     try:
-        response = httpx.get(_API_PDFS)
+        response = httpx.get(_API_PDFS, verify=_VERIFY)
         response.raise_for_status()
         pdfs = response.json()
 
@@ -142,7 +148,7 @@ def _cmd_get(args: argparse.Namespace) -> int:
         Código de salida (0 = éxito, 1 = error).
     """
     try:
-        response = httpx.get(f"{_API_PDFS}/{args.pdf_id}/text")
+        response = httpx.get(f"{_API_PDFS}/{args.pdf_id}/text", verify=_VERIFY)
 
         if response.status_code == 404:
             print(f"Error: No existe un PDF con ID '{args.pdf_id}'.", file=sys.stderr)
@@ -177,7 +183,7 @@ def _cmd_delete(args: argparse.Namespace) -> int:
         Código de salida (0 = éxito, 1 = error).
     """
     try:
-        response = httpx.delete(f"{_API_PDFS}/{args.pdf_id}")
+        response = httpx.delete(f"{_API_PDFS}/{args.pdf_id}", verify=_VERIFY)
 
         if response.status_code == 404:
             print(f"Error: No existe un PDF con ID '{args.pdf_id}'.", file=sys.stderr)
@@ -205,7 +211,7 @@ def _cmd_download(args: argparse.Namespace) -> int:
         Código de salida (0 = éxito, 1 = error).
     """
     try:
-        response = httpx.get(f"{_API_PDFS}/{args.pdf_id}/download")
+        response = httpx.get(f"{_API_PDFS}/{args.pdf_id}/download", verify=_VERIFY)
 
         if response.status_code == 404:
             print(f"Error: No existe un PDF con ID '{args.pdf_id}'.", file=sys.stderr)
