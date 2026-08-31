@@ -8,9 +8,18 @@ from pathlib import Path
 from typing import Generator
 
 import pytest
+from fastapi.testclient import TestClient
 
 # Configurar PYTHONPATH para importar dev
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from dev.dev.server.app import app
+
+#Client fixture para test de API
+@pytest.fixture(scope="function")
+def client()-> TestClient:
+    """Proporciona un TestClient de FastAPI para tests de integración."""
+    return TestClient(app)
 
 
 # Upload directory fixture
