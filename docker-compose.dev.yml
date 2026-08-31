@@ -27,6 +27,15 @@ services:
     environment:
       - MONGO_URI=mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb:27017/?authSource=admin
       - MONGO_DB_NAME=${MONGO_DB_NAME}
+      # Ruta al CA de mkcert montado abajo: permite que el CLI dentro del
+      # contenedor (`docker compose exec app fast-pdf ...`) confíe en el cert.
+      - SSL_CERT_FILE=/etc/ssl/certs/mkcert-rootCA.pem
+    volumes:
+      # rootCA.pem de mkcert de la máquina host (auto-resuelto por run.sh).
+      - ${MKCERT_CAROOT}/rootCA.pem:/etc/ssl/certs/mkcert-rootCA.pem:ro
+    extra_hosts:
+      # Resuelve el dominio local hacia el host, donde Traefik publica el 443.
+      - "api.pdfmanager.local:host-gateway"
     networks:
       - pdf_internal_network
       - fast_pdf_network 

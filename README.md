@@ -54,6 +54,8 @@ mv pdfmanager.local+1-key.pem pdfmanager-key.pem
 ```
 
 > Cada máquina genera los suyos (no se versionan). Si es la primera vez usando `mkcert`, corré `mkcert -install` para que el navegador confíe en el certificado.
+
+> 🔒 **Certificado y Python:** el CLI ya confía automáticamente en el rootCA de `mkcert` (lo detecta con `mkcert -CAROOT`). No hace falta exportar `SSL_CERT_FILE` a mano.
  
 ### 2. Agregar el dominio local al archivo de hosts
 
@@ -163,6 +165,8 @@ Una vez levantado docker y sincronizado uv se puede usar directamente con: `fast
 de que falle, se puede usar `uv run fast-pdf <comando>` para minimizar errores. Se puede usar `fast-pdf -h` para ayuda.
 
 > ⚠️ **Importante:** como la API ya no publica el puerto 8000 al host, el valor por defecto `API_BASE_URL=http://localhost:8000` no funciona ejecutando el CLI desde la terminal del host. Dos opciones: correr el CLI dentro del contenedor (`docker compose exec app fast-pdf list`), o apuntar `API_BASE_URL` a `https://api.pdfmanager.local` en el `.env`.
+
+> 🔒 En ambos casos el CLI confía solo en el certificado local de `mkcert` sin pasos manuales: en el host lo auto-detecta con `mkcert -CAROOT`, y dentro del contenedor `docker-compose.dev.yml` monta el `rootCA.pem` y setea `SSL_CERT_FILE` por vos.
 
 ### Comandos
 

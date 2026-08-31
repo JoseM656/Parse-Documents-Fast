@@ -35,3 +35,7 @@ class TestConfig:
     def test_settings_api_base_url_default_is_localhost(self):
         """La URL base por defecto apunta a localhost:8000."""
         assert "localhost:8000" in settings.API_BASE_URL
+
+    def test_settings_ssl_cert_file_defaults_to_none(self):
+        """La ruta al CA local es opcional y por defecto no está configurada."""
+        assert settings.SSL_CERT_FILE is None
