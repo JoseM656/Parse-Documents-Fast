@@ -1,8 +1,16 @@
 """Tests para el módulo de configuración."""
 
+import tomllib
+from pathlib import Path
+
 import pytest
 from dev.config import settings
 
+def _pyproject_version() -> str:
+    """Lee la versión declarada en pyproject.toml (la misma fuente que usa config.py)."""
+    pyproject_path = Path(__file__).resolve().parent.parent / "pyproject.toml"
+    with pyproject_path.open("rb") as f:
+        return tomllib.load(f)["project"]["version"]
 
 class TestConfig:
     """Tests para verificar la configuración de la aplicación."""
@@ -15,7 +23,7 @@ class TestConfig:
     def test_settings_version_is_defined(self):
         """La aplicación tiene una versión configurada."""
         assert settings.VERSION is not None
-        assert settings.VERSION == "1.0.0"
+        assert settings.VERSION == _pyproject_version()
 
     def test_settings_mongo_uri_is_defined(self):
         """La aplicación tiene una URI de MongoDB configurada."""
