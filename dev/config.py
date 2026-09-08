@@ -1,14 +1,19 @@
+import tomllib
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from importlib.metadata import version, PackageNotFoundError
 
 def get_version():
     """
     Consigue la version del programa desde el .toml
     """
+    pyproject_path = Path(__file__).resolve().parent.parent / "pyproject.toml"
     try:
-        return version("pdf-manager") 
-    
-    except PackageNotFoundError:    
+        with pyproject_path.open("rb") as f:
+            return tomllib.load(f)["project"]["version"]
+
+    except (FileNotFoundError, KeyError, tomllib.TOMLDecodeError):
+
         return "unknown" # en caso de que no lo encuentre.
 
 class Settings(BaseSettings):
